@@ -1,0 +1,10 @@
+version: '3'
+services:
+  # Node.js app for notes service
+  app_user:
+    build: 
+      context: ./notes-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./notes-service:/usr/app
