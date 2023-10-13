@@ -56,31 +56,35 @@ export class FirebaseTaskRepository implements TaskRepository {
     }
   }
 
-  async list(page: number, itemsPerPage: number): Promise<TaskEntity[]> {
+  async list(page = 1, itemsPerPage = 10, startAfterDoc = null):Promise<any> {
     try {
       const taskCollection = collection(db, 'tasks');
-      
-      // Order the documents by a specific field (e.g., createdAt)
-      const orderedQuery = query(taskCollection, orderBy('createdAt'));
-  
-      // Determine the document to start after based on the page and items per page
-      const startAfterDoc = startAfter(orderedQuery, page * itemsPerPage);
-  
-      // Limit the results to the specified number of items per page
-      const limitedQuery = query(startAfterDoc as any, limit(itemsPerPage));
-  
-      const querySnapshot = await getDocs(limitedQuery);
-  
-      const tasks: TaskEntity[] = [];
-  
-      querySnapshot.forEach((doc) => {
-        const taskData = doc.data() as TaskEntity;
-        tasks.push({ ...taskData, uuid: doc.id });
+      let baseQuery = query(taskCollection, orderBy('createdAt'));
+
+      // If there is a starting point, use startAfter to start the query after that document
+      if (startAfterDoc) {
+        baseQuery = query(baseQuery, startAfter(startAfterDoc));
+      }
+
+      // Limit the results to the number of itemsPerPage
+      baseQuery = query(baseQuery, limit(itemsPerPage));
+
+      const querySnapshot = await getDocs(baseQuery);
+
+      const results = querySnapshot.docs.map((doc) => {
+        const taskData = doc.data();
+        return { ...taskData, uuid: doc.id };
       });
-  
-      return tasks;
+
+      return {
+        data: results,
+        nextPage: page + 1,
+      };
     } catch (error) {
-      throw new Error('Erro ao listar as tarefas: ' + error);
+      console.error('Error retrieving data from Firestore:', error);
+      throw new Error('Error retrieving data from Firestore: ' + error);
     }
   }
 }
+ 
+

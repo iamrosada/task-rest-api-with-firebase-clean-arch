@@ -1,5 +1,6 @@
 import express, { Request, Response, query } from "express";
 import { taskCreateCtrl, taskDeleteCtrl, taskListCtrl, taskUpdateCtrl } from "../task-core";
+import { FirebaseTaskRepository } from "../../repository/firebase-task-repository";
 
 
 
@@ -25,31 +26,35 @@ export const handlerCreateTask = async (req: Request, res: Response) => {
 };
 
 // Rota para recuperar todas as tarefas
+
 export const handlerGetTasks = async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1; // Página padrão: 1
-    const itemsPerPage = parseInt(req.query.itemsPerPage as string) || 10; // Itens por página padrão: 10
+    const page = parseInt(req.query.page as string) || 1; 
+    const itemsPerPage = parseInt(req.query.itemsPerPage as string) || 10; 
 
-    // Calcule o ponto de partida com base na página atual e itens por página
-    const startAt = (page - 1) * itemsPerPage;
-      
-    
-    // Chame sua função de listagem de tarefas com suporte a paginação
-    const taskGotResponse = await taskListCtrl.listCtrl({startAt, itemsPerPage});
+    if (page <= 0 || itemsPerPage <= 0) {
+      throw new Error('Invalid pagination parameters');
+    }
+
+    const startAfterDoc = req.query.startAfter || null; 
+
+    const taskRepository = new FirebaseTaskRepository(); 
+    const taskGotResponse = await taskRepository.list(page, itemsPerPage, startAfterDoc);
 
     if (!taskGotResponse) {
       return res.status(404).json({
-        message: "Tasks not found",
+        message: 'Tasks not found',
       });
     }
 
     return res.status(200).json({
-      message: "Got tasks with success",
-      tasks: taskGotResponse,
+      message: 'Got tasks with success',
+      tasks: taskGotResponse.data, 
+      nextPage: taskGotResponse.nextPage,
     });
   } catch (error) {
-    console.error("Erro ao procurar a tarefa:", error);
-    res.status(500).json({ error: "Erro ao procurar a tarefa" });
+    console.error('Erro ao procurar a tarefa:', error);
+    res.status(500).json({ error: 'Erro ao procurar a tarefa' });
   }
 };
 
