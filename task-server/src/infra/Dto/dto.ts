@@ -13,3 +13,8 @@ export interface TaskCreateOutputDto{
   createdAt: Date;
   updatedAt: Date;
 }
+
+
+export interface TaskListInputDto{
+  startAt:number; itemsPerPage:number
+}
