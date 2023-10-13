@@ -6,7 +6,9 @@
     "strict": false, 
     "noImplicitAny": false,
     "target": "es6",                         
-    "esModuleInterop": true,             
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+             
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
