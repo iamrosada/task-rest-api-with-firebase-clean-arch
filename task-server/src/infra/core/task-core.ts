@@ -27,8 +27,9 @@ const taskListUseCase = new ListTaskUseCase(taskRepo)
  * Iniciar task Controller
  */
 
-export const taskCreateCtrl = new CreateTaskController(taskCreateUseCase);
-export const deleteCreateCtrl = new DeleteTaskController(taskDeleteUseCase);
-export const updateCreateCtrl = new UpdateTaskController(taskUpdateUseCase);
-export const listCreateCtrl = new ListTaskController(taskListUseCase);
+ const taskCreateCtrl = new CreateTaskController(taskCreateUseCase);
+ const taskDeleteCtrl = new DeleteTaskController(taskDeleteUseCase);
+ const taskUpdateCtrl = new UpdateTaskController(taskUpdateUseCase);
+ const taskListCtrl = new ListTaskController(taskListUseCase);
 
+export { taskCreateCtrl, taskDeleteCtrl, taskUpdateCtrl,taskListCtrl}
