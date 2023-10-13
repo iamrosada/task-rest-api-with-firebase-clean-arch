@@ -1,5 +1,5 @@
 import { UpdateTaskUseCase } from "../../application/usecase/update-task";
-import { TaskCreateInputDto, TaskCreateOutputDto } from "../Dto/dto";
+import { TaskCreateInputDto, TaskCreateOutputDto } from "../dto/dto";
 
 
 export class UpdateTaskController {
