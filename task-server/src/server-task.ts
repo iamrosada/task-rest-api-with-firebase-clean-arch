@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import runServer from './infra/http';
+import runServer from './infra/http/routes';
 
 export const app = express();
 
