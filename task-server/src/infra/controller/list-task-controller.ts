@@ -1,12 +1,13 @@
 import { ListTaskUseCase } from "../../application/usecase/list-task";
+import { TaskListInputDto } from "../dto/dto";
 
 
 export class ListTaskController {
-  constructor(private deleteTaskUseCase: ListTaskUseCase) {}
-  public async listCtrl(taskId: string) {   
+  constructor(public listTaskUseCase: ListTaskUseCase) {}
+  public async listCtrl(input:TaskListInputDto) {   
    
     try {
-      const task = await this.deleteTaskUseCase.listTask();
+      const task = await this.listTaskUseCase.listTask(input.startAt, input.itemsPerPage);
 
       return task;
     } catch (error) {
