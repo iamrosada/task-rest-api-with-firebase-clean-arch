@@ -37,10 +37,8 @@ export const handlerGetTasks = async (req: Request, res: Response) => {
     }
 
     const startAfterDoc = req.query.startAfter || null; 
-
-    const taskRepository = new FirebaseTaskRepository(); 
-    const taskGotResponse = await taskRepository.list(page, itemsPerPage, startAfterDoc);
-
+    
+    const taskGotResponse = await taskListCtrl.listCtrl(page, itemsPerPage, startAfterDoc)
     if (!taskGotResponse) {
       return res.status(404).json({
         message: 'Tasks not found',
@@ -49,7 +47,7 @@ export const handlerGetTasks = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: 'Got tasks with success',
-      tasks: taskGotResponse.data, 
+      tasks: taskGotResponse.tasks, 
       nextPage: taskGotResponse.nextPage,
     });
   } catch (error) {

@@ -3,12 +3,10 @@ import { ListTaskUseCase } from "../../application/usecase/list-task";
 
 export class ListTaskController {
   constructor(private listTaskUseCase: ListTaskUseCase) {}  
-  public async listCtrl() {   
+  public async listCtrl(page:number, itemsPerPage:number, startAfterDoc:any) {   
    
-    // console.info(startAt, itemsPerPage,"hhhhhhhh")
     try {
-      const task = await this.listTaskUseCase.listTask();
-      console.info( task,"mmmmmm")
+      const task = await this.listTaskUseCase.listTask(page, itemsPerPage, startAfterDoc);
 
       return task;
     } catch (error) {

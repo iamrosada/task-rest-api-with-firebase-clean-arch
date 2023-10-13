@@ -1,4 +1,4 @@
-import { TaskRepository } from "../../application/repository/task-repository";
+import { ListResponseOutput, TaskRepository } from "../../application/repository/task-repository";
 import { TaskEntity } from "../../domain/task";
 
 import {
@@ -56,7 +56,7 @@ export class FirebaseTaskRepository implements TaskRepository {
     }
   }
 
-  async list(page = 1, itemsPerPage = 10, startAfterDoc = null):Promise<any> {
+  async list(page = 1, itemsPerPage = 10, startAfterDoc = null):Promise<ListResponseOutput> {
     try {
       const taskCollection = collection(db, 'tasks');
       let baseQuery = query(taskCollection, orderBy('createdAt'));
@@ -74,10 +74,10 @@ export class FirebaseTaskRepository implements TaskRepository {
       const results = querySnapshot.docs.map((doc) => {
         const taskData = doc.data();
         return { ...taskData, uuid: doc.id };
-      });
+      }) as unknown as TaskEntity;
 
       return {
-        data: results,
+        tasks: results  as TaskEntity as unknown as TaskEntity[],
         nextPage: page + 1,
       };
     } catch (error) {
