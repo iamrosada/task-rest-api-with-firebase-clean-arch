@@ -37,7 +37,7 @@ export const handlerGetTasks = async (req: Request, res: Response) => {
     }
 
     const startAfterDoc = req.query.startAfter || null; 
-    
+
     const taskGotResponse = await taskListCtrl.listCtrl(page, itemsPerPage, startAfterDoc)
     if (!taskGotResponse) {
       return res.status(404).json({
@@ -55,10 +55,6 @@ export const handlerGetTasks = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Erro ao procurar a tarefa' });
   }
 };
-
-
-
-
 
 
 
