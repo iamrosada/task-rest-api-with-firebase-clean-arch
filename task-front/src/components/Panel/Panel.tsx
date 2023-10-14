@@ -4,17 +4,17 @@ import { TextField, Paper, Button, Box, Stack } from '@mui/material';
 
 import type { Task } from '../../App';
 
-const DEFAULT_TASK = { name: '', description: '' };
+const DEFAULT_TASK = { title: '', description: '' };
 
 interface AddTaskPanelProps {
   mode: 'add';
-  onAddTask: ({ name, description }: Omit<Task, 'id' | 'checked'>) => void;
+  onAddTask: ({ title, description }: Omit<Task, 'id' | 'checked'>) => void;
 }
 
 interface EditTaskPanelProps {
   mode: 'edit';
   editTask: Omit<Task, 'id' | 'checked'>;
-  onChangeTask: ({ name, description }: Omit<Task, 'id' | 'checked'>) => void;
+  onChangeTask: ({ title, description }: Omit<Task, 'id' | 'checked'>) => void;
 }
 
 type TaskPanelProps = AddTaskPanelProps | EditTaskPanelProps;
@@ -32,8 +32,8 @@ export const TaskPanel: React.FC<TaskPanelProps> = (props) => {
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, name } = event.target;
-    setTask({ ...task, [name]: value });
+    const { value, title } = event.target;
+    setTask({ ...task, [title]: value });
   };
 
   return (
@@ -48,11 +48,11 @@ export const TaskPanel: React.FC<TaskPanelProps> = (props) => {
       }}
     >
       <Stack direction='row' spacing={1}>
-        <TextField value={task.name} onChange={onChange} name='name' label='name' fullWidth />
+        <TextField value={task.title} onChange={onChange} title='title' label='title' fullWidth />
         <TextField
           value={task.description}
           onChange={onChange}
-          name='description'
+          title='description'
           label='description'
           fullWidth
         />

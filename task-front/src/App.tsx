@@ -5,17 +5,17 @@ import { Header, TaskPanel, TaskList } from './components';
 
 export type Task = {
   id: number;
-  name: string;
+  title: string;
   description: string;
   checked: boolean;
 };
 
 const DEFAULT_TASK_LIST = [
-  { id: 1, name: 'task 1', description: 'description 1', checked: false },
-  { id: 2, name: 'task 2', description: 'description 2', checked: false },
+  { id: 1, title: 'task 1', description: 'description 1', checked: false },
+  { id: 2, title: 'task 2', description: 'description 2', checked: false },
   {
     id: 3,
-    name: 'task 3',
+    title: 'task 3',
     description:
       'so long task description 3 so long task description so long task description so long task description so long task description',
     checked: true
@@ -34,10 +34,10 @@ export const App = () => {
     setTaskList(taskList.filter((task) => task.id !== id));
   };
 
-  const onAddTask = ({ name, description }: Omit<Task, 'id' | 'checked'>) => {
+  const onAddTask = ({ title, description }: Omit<Task, 'id' | 'checked'>) => {
     setTaskList([
       ...taskList,
-      { id: taskList[taskList.length - 1].id + 1, description, name, checked: false }
+      { id: taskList[taskList.length - 1].id + 1, description, title, checked: false }
     ]);
   };
 
@@ -52,11 +52,11 @@ export const App = () => {
     );
   };
 
-  const onChangeTask = ({ name, description }: Omit<Task, 'id' | 'checked'>) => {
+  const onChangeTask = ({ title, description }: Omit<Task, 'id' | 'checked'>) => {
     setTaskList(
       taskList.map((task) => {
         if (task.id === editTaskId) {
-          return { ...task, name, description };
+          return { ...task, title, description };
         }
         return task;
       })

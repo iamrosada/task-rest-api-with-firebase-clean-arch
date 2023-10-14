@@ -31,7 +31,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onDeleteTask, onCheckT
         component='h5'
         gutterBottom
       >
-        {task.name}
+        {task.title}
       </Typography>
       <Typography variant='subtitle1' component='div' gutterBottom>
         {task.description}

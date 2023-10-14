@@ -11,7 +11,7 @@ interface TaskListProps {
   onDeleteTask: (id: Task['id']) => void;
   onCheckTask: (id: Task['id']) => void;
   onEdit: (id: Task['id']) => void;
-  onChangeTask: ({ name, description }: Omit<Task, 'id' | 'checked'>) => void;
+  onChangeTask: ({ title, description }: Omit<Task, 'id' | 'checked'>) => void;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
