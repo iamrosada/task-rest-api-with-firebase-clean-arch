@@ -2,38 +2,38 @@ import React from 'react';
 import { Add as AddIcon } from '@mui/icons-material';
 import { TextField, Paper, Button, Box, Stack } from '@mui/material';
 
-import type { Todo } from '../../App';
+import type { Task } from '../../App';
 
-const DEFAULT_TODO = { name: '', description: '' };
+const DEFAULT_TASK = { name: '', description: '' };
 
-interface AddTodoPanelProps {
+interface AddTaskPanelProps {
   mode: 'add';
-  onAddTodo: ({ name, description }: Omit<Todo, 'id' | 'checked'>) => void;
+  onAddTask: ({ name, description }: Omit<Task, 'id' | 'checked'>) => void;
 }
 
-interface EditTodoPanelProps {
+interface EditTaskPanelProps {
   mode: 'edit';
-  editTodo: Omit<Todo, 'id' | 'checked'>;
-  onChangeTodo: ({ name, description }: Omit<Todo, 'id' | 'checked'>) => void;
+  editTask: Omit<Task, 'id' | 'checked'>;
+  onChangeTask: ({ name, description }: Omit<Task, 'id' | 'checked'>) => void;
 }
 
-type TodoPanelProps = AddTodoPanelProps | EditTodoPanelProps;
+type TaskPanelProps = AddTaskPanelProps | EditTaskPanelProps;
 
-export const TodoPanel: React.FC<TodoPanelProps> = (props) => {
+export const TaskPanel: React.FC<TaskPanelProps> = (props) => {
   const isEdit = props.mode === 'edit';
-  const [todo, setTodo] = React.useState(isEdit ? props.editTodo : DEFAULT_TODO);
+  const [task, setTask] = React.useState(isEdit ? props.editTask : DEFAULT_TASK);
 
   const onClick = () => {
     if (isEdit) {
-      return props.onChangeTodo(todo);
+      return props.onChangeTask(task);
     }
-    props.onAddTodo(todo);
-    setTodo(DEFAULT_TODO);
+    props.onAddTask(task);
+    setTask(DEFAULT_TASK);
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value, name } = event.target;
-    setTodo({ ...todo, [name]: value });
+    setTask({ ...task, [name]: value });
   };
 
   return (
@@ -48,9 +48,9 @@ export const TodoPanel: React.FC<TodoPanelProps> = (props) => {
       }}
     >
       <Stack direction='row' spacing={1}>
-        <TextField value={todo.name} onChange={onChange} name='name' label='name' fullWidth />
+        <TextField value={task.name} onChange={onChange} name='name' label='name' fullWidth />
         <TextField
-          value={todo.description}
+          value={task.description}
           onChange={onChange}
           name='description'
           label='description'
