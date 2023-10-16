@@ -1,69 +1,91 @@
-import React from 'react';
+import React, {  useEffect } from 'react';
 import { Box } from '@mui/material';
-
+// eslint-disable-next-line import/no-cycle
 import { Header, TaskPanel, TaskList } from './components';
+import { useTaskContext } from './shared/context/response-context';
 
 export type Task = {
-  id: number;
+  uuid: string;
   title: string;
   description: string;
-  checked: boolean;
 };
 
-const DEFAULT_TASK_LIST = [
-  { id: 1, title: 'task 1', description: 'description 1', checked: false },
-  { id: 2, title: 'task 2', description: 'description 2', checked: false },
-  {
-    id: 3,
-    title: 'task 3',
-    description:
-      'so long task description 3 so long task description so long task description so long task description so long task description',
-    checked: true
-  }
-];
-
 export const App = () => {
-  const [editTaskId, setEditTaskId] = React.useState<number | null>(null);
-  const [taskList, setTaskList] = React.useState(DEFAULT_TASK_LIST);
+  const [editTaskId, setEditTaskId] = React.useState<string | null>(null);
+  const { createTaskFn, deleteTaskFn, updateTaskFn, listTasksFn,taskItems } = useTaskContext();
+  const [taskList, setTaskList] = React.useState<Task[]>(taskItems);
 
-  const onEdit = (id: Task['id']) => {
-    setEditTaskId(id);
+  const onAddTask = async (title:string, description:string) => {
+    try {
+      const response = await createTaskFn(title, description);
+      const newTask = response as any;
+
+      setTaskList((prevTaskList) => [...prevTaskList, newTask]);
+
+    } catch (error) {
+      console.error('Error creating a task:', error);
+    }
   };
 
-  const onDeleteTask = (id: Task['id']) => {
-    setTaskList(taskList.filter((task) => task.id !== id));
+
+
+  const onDeleteTask = async (uuid: Task['uuid']) => {
+    try {
+      await deleteTaskFn(uuid);
+      const response = await listTasksFn();
+      setTaskList(response);
+    } catch (error) {
+      console.error('Error deleting a task:', error);
+    }
   };
 
-  const onAddTask = ({ title, description }: Omit<Task, 'id' | 'checked'>) => {
-    setTaskList([
-      ...taskList,
-      { id: taskList[taskList.length - 1].id + 1, description, title, checked: false }
-    ]);
+  const onEdit = (uuid: Task['uuid']) => {
+    setEditTaskId(uuid);
   };
 
-  const onCheckTask = (id: Task['id']) => {
-    setTaskList(
-      taskList.map((task) => {
-        if (task.id === id) {
-          return { ...task, checked: !task.checked };
-        }
-        return task;
-      })
-    );
+  const onChangeTask = async ({ title, description }: Omit<Task, 'uuid'>) => {
+    try {
+      if (editTaskId) {
+        const response = await updateTaskFn(editTaskId, title, description);
+        const updatedTask = response;
+        setTaskList((prevTaskList) =>
+          prevTaskList.map((task) => (task.uuid === updatedTask.uuid ? updatedTask : task))
+        );
+        setEditTaskId(null);
+      }
+    } catch (error) {
+      console.error('Error updating a task:', error);
+    }
   };
 
-  const onChangeTask = ({ title, description }: Omit<Task, 'id' | 'checked'>) => {
-    setTaskList(
-      taskList.map((task) => {
-        if (task.id === editTaskId) {
-          return { ...task, title, description };
-        }
-        return task;
-      })
-    );
-    setEditTaskId(null);
-  };
+  useEffect(() => {
+    
+    const updateTaskList = async () => {
+      try {
+        const response = await listTasksFn();
+        setTaskList(response); 
+      } catch (error) {
+        console.error('Error updating task list:', error);
+      }
+    };
 
+    updateTaskList(); 
+
+  }, [taskList, listTasksFn]); 
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await listTasksFn();
+        console.log(response,"dentro do effect")
+        setTaskList([...taskList, ...(response || [])]);
+      } catch (error) {
+        console.error('Error fetching task list:', error);
+      }
+    };
+  
+    fetchData(); 
+  }, []);
   return (
     <Box marginTop={5} height='100%' display='flex' justifyContent='center' alignContent='center'>
       <Box display='flex' flexDirection='column' width='500px'>
@@ -73,7 +95,6 @@ export const App = () => {
           editTaskId={editTaskId}
           taskList={taskList}
           onDeleteTask={onDeleteTask}
-          onCheckTask={onCheckTask}
           onEdit={onEdit}
           onChangeTask={onChangeTask}
         />
