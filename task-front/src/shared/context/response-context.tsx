@@ -8,17 +8,20 @@ export type Task = {
   description: string;
 };
 interface ApiResponse {
+  size: number;
   tasks: Task[];
+
 }
 
 interface TaskContextType {
   createTaskFn: (title: string, description: string) => Promise<void>;
   deleteTaskFn: (uuid: string) => Promise<void>; 
   updateTaskFn: (uuid: string, title: string, description: string) => Promise<Task>;
-  listTasksFn: () => Promise<Task[]>;
+  listTasksFn: (page: number, itemsPerPage: number) => Promise<ApiResponse>;
   loginFn: (name: string, password: string) => Promise<string>;
   logoutFn: () => void;
   taskItems: Task[];
+  realSizeArray:number
 }
 
 const TaskContext = createContext<TaskContextType>({
@@ -28,7 +31,8 @@ const TaskContext = createContext<TaskContextType>({
   updateTaskFn: () => Promise.resolve() as any,
   listTasksFn: () => Promise.resolve() as any,
   loginFn: () => Promise.resolve() as any, 
-  taskItems: []
+  taskItems: [],
+  realSizeArray:0,
 });
 
 export const useTaskContext = () => useContext(TaskContext);
@@ -36,13 +40,14 @@ export const useTaskContext = () => useContext(TaskContext);
 export const TaskProvider = ({ children }: any) => {
   const [error, setError] = useState<string | any>('');
   const [taskItems, setTaskItems] = useState<Task[]>([]);
+  const [realSizeArray, setRealSizeArray] = useState<number>(0)
+
 
   const createTaskFn = useCallback(async (title: string, description: string): Promise<void> => {
     try {
       const response = await client.post<Task>('/tasks', { title, description });
-      console.log(response.data.task,"taskItems")
 
-      setTaskItems((prevTaskItems) => [...prevTaskItems, response.data.task]);
+      return setTaskItems((prevTaskItems) => [...prevTaskItems, response.data.task]);
 
     } catch (error: any) {
       setError(`Error creating task: ${error.message}`);
@@ -73,16 +78,47 @@ export const TaskProvider = ({ children }: any) => {
     }
   }, []);
 
-  const listTasksFn = useCallback(async (): Promise<Task[]> => {
+  // const listTasksFn = useCallback(async (): Promise<Task[]> => {
+  //   try {
+  //     const response = await client.get<ApiResponse>('/tasks');
+  //     setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
+
+  //     return response.data?.tasks;
+  //   } catch (error: any) {
+  //     setError(`Error listing tasks: ${error.message}`);
+  //     throw error;
+  //   }
+  // }, []);
+  // const listTasksFn = useCallback(async (page: number, itemsPerPage: number): Promise<Task[]> => {
+  //   try {
+  //     const response = await client.get<ApiResponse>('/tasks', {
+  //       params: {
+  //         page,
+  //         itemsPerPage,
+  //       },
+  //     });
+  //     setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
+  
+  //     return response.data?.tasks;
+  //   } catch (error: any) {
+  //     setError(`Error listing tasks: ${error.message}`);
+  //     throw error;
+  //   }
+  // }, [client, taskItems]);
+  const listTasksFn = useCallback(async (page: number, itemsPerPage: number): Promise<ApiResponse> => {
     try {
-      const response = await client.get<ApiResponse>('/tasks');
+      const response = await client.get<ApiResponse>(`/tasks?page=${page}&itemsPerPage=${itemsPerPage}`);
       setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
-      return response.data?.tasks;
+      console.log("response.data?.tasks;",response.data?.size, realSizeArray)
+      setRealSizeArray(response.data?.size)
+      console.log("response.data?.tasks;",response.data?.size, realSizeArray)
+
+      return {tasks:response.data?.tasks, size: response.data?.size}
     } catch (error: any) {
       setError(`Error listing tasks: ${error.message}`);
       throw error;
     }
-  }, []);
+  }, [client, taskItems]);
 
   const loginFn = useCallback(async (name: string, password: string): Promise<string> => {
     try {
@@ -107,6 +143,7 @@ export const TaskProvider = ({ children }: any) => {
     loginFn,
     logoutFn,
     taskItems,
+    realSizeArray,
     error,
   }), [taskItems, error]);
 
