@@ -4,6 +4,11 @@ import ReactDOM from 'react-dom/client';
 import { App } from './App';
 
 import './index.css';
+import { TaskProvider } from './shared/context/response-context';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(<App />);
+root.render(
+  <TaskProvider>
+    <App />
+  </TaskProvider>
+);
