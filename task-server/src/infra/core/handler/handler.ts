@@ -17,7 +17,7 @@ export const handlerCreateTask = async (req: Request, res: Response) => {
       .json({
         message: "Tarefa adicionada com sucesso",
         taskId: taskCreatedResponse.uuid,
-        data: taskCreatedResponse
+        task:taskCreatedResponse
       });
   } catch (error) {
     console.error("Erro ao adicionar a tarefa:", error);
@@ -49,6 +49,7 @@ export const handlerGetTasks = async (req: Request, res: Response) => {
       message: 'Got tasks with success',
       tasks: taskGotResponse.tasks, 
       nextPage: taskGotResponse.nextPage,
+      size: taskGotResponse.size
     });
   } catch (error) {
     console.error('Erro ao procurar a tarefa:', error);
