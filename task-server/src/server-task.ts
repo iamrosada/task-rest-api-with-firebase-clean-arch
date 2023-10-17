@@ -6,9 +6,18 @@ import runServer from './infra/http/routes';
 export const app = express();
 
 
-// Middleware
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Replace with the actual origin of your frontend
+  credentials: true, // Allow credentials (cookies, HTTP authentication)
+}));
+
+// {
+//   origin: 'http://localhost:3000', 
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', 
+//   allowedHeaders: 'Content-Type,Authorization', 
+// }
 app.use(express.json());
-app.use(cors());
 
 // Routes
 app.get('/', (req, res) => {
@@ -21,7 +30,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 runServer();
 

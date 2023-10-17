@@ -10,5 +10,6 @@ export interface TaskRepository{
 
 export type ListResponseOutput= {
   tasks: TaskEntity[];
-  nextPage: number
+  nextPage: number,
+  size:number
 }

@@ -61,15 +61,15 @@ export class FirebaseTaskRepository implements TaskRepository {
       const taskCollection = collection(db, 'tasks');
       let baseQuery = query(taskCollection, orderBy('createdAt'));
 
-      // If there is a starting point, use startAfter to start the query after that document
       if (startAfterDoc) {
         baseQuery = query(baseQuery, startAfter(startAfterDoc));
       }
-
-      // Limit the results to the number of itemsPerPage
       baseQuery = query(baseQuery, limit(itemsPerPage));
 
       const querySnapshot = await getDocs(baseQuery);
+
+      const querySnapshotSize= await getDocs(taskCollection);
+      const collectionSize = querySnapshotSize.size;
 
       const results = querySnapshot.docs.map((doc) => {
         const taskData = doc.data();
@@ -79,6 +79,7 @@ export class FirebaseTaskRepository implements TaskRepository {
       return {
         tasks: results  as TaskEntity as unknown as TaskEntity[],
         nextPage: page + 1,
+        size:collectionSize,
       };
     } catch (error) {
       console.error('Error retrieving data from Firestore:', error);
