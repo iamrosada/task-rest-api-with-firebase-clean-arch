@@ -78,14 +78,6 @@ const Login = () => {
           >
             Login
           </Button>
-          {/* <Button
-            style={{ ...loginButtonStyle, backgroundColor: '#4285f4' }}
-            variant='contained'
-            startIcon={<GoogleIcon />}
-            onClick={signInWithGoogleFn}
-          >
-            Login with Google
-          </Button> */}
         </Box>
         <Link component={RouterLink} to='/reset' className='link' padding="10px" marginBottom="20px">
           Forgot Password
