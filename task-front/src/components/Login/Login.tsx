@@ -1,19 +1,13 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { useState } from 'react';
+import React from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import { Box } from '@mui/material';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
+import { TextField, Button, Box, Container, Paper, Typography, Link } from '@mui/material';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { useAuthContext } from '../../shared/context/auth-context';
 
 const Login = () => {
   const { loginFn } = useAuthContext();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const loginButtonStyle = {
@@ -21,14 +15,14 @@ const Login = () => {
     marginTop: '16px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   };
   const containerStyle = {
     height: '100vh',
     width: '100vw',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   };
 
   const textBoxStyle = {
@@ -36,16 +30,29 @@ const Login = () => {
     fontSize: '18px',
     marginBottom: '10px'
   };
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().required('Email is required').email('Invalid email address'),
+    password: Yup.string().required('Password is required'),
+  });
 
-  const handleLogin = () => {
-    loginFn(email, password)
-      .then(() => {
-        navigate('/dashboard');
-      })
-      .catch((error) => {
-        console.error('Login Error:', error);
-      });
+  const handleSubmit = async (values: { email: string; password: string; }) => {
+    try {
+      await loginFn(values.email, values.password);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login Error:', error);
+    }
   };
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema,
+    onSubmit: handleSubmit,
+  });
+
   return (
     <Container style={containerStyle}>
       <Paper elevation={3} className='paper'>
@@ -53,31 +60,40 @@ const Login = () => {
           Login
         </Typography>
         <Box display='flex' flexDirection='column' textAlign='center' padding='30px'>
-          <TextField
-            style={textBoxStyle}
-            className='textfield'
-            label='E-mail Address'
-            variant='outlined'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            style={textBoxStyle}
-            className='textfield'
-            label='Password'
-            type='password'
-            variant='outlined'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button
-            style={loginButtonStyle}
-            variant='contained'
-            color='primary'
-            onClick={handleLogin}
-          >
-            Login
-          </Button>
+          <form onSubmit={formik.handleSubmit}>
+            <TextField
+              style={textBoxStyle}
+              className='textfield'
+              name="email"
+              label="E-mail Address"
+              type="email"
+              variant="outlined"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              error={formik.touched.email && Boolean(formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
+            />
+            <TextField
+              style={textBoxStyle}
+              className='textfield'
+              name="password"
+              label="Password"
+              type="password"
+              variant="outlined"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={formik.touched.password && formik.errors.password}
+            />
+            <Button
+              style={loginButtonStyle}
+              variant='contained'
+              color='primary'
+              type="submit"
+            >
+              Login
+            </Button>
+          </form>
         </Box>
         <Link component={RouterLink} to='/reset' className='link' padding="10px" marginBottom="20px">
           Forgot Password
@@ -91,3 +107,6 @@ const Login = () => {
 };
 
 export default Login;
+
+
+
