@@ -20,7 +20,8 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module'
   },
-  plugins: ['react', '@typescript-eslint', 'prettier'],
+  plugins: ['react', '@typescript-eslint', 'prettier','import'],
+
   rules: {
     '@typescript-eslint/no-shadow': 0,
     'consistent-return': 0,
@@ -38,6 +39,9 @@ module.exports = {
     'react/no-unstable-nested-components': [2, { allowAsProps: true }],
     'react/no-array-index-key': 0,
     'class-methods-use-this': 0,
-    'react/destructuring-assignment': 0
-  }
+    'react/destructuring-assignment': 0,
+    'import/no-extraneous-dependencies': ["error", {"devDependencies": false, "optionalDependencies": false, "peerDependencies": false}],
+
+
+  },
 };
