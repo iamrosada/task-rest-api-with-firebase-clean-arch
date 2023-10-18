@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { IconButton, Box, Paper, Typography } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
@@ -11,7 +13,8 @@ interface TaskItemProps {
 }
 
 export const TaskItem: React.FC<TaskItemProps> = ({ task, onDeleteTask, onEdit }) => (
-  <Paper
+
+    <Paper
     elevation={1}
     sx={{
       marginBottom: '15px',
@@ -46,4 +49,5 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onDeleteTask, onEdit }
       </IconButton>
     </Box>
   </Paper>
+  
 );
