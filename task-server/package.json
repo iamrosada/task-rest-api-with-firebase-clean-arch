@@ -4,7 +4,7 @@
   "description": "",
   "main": "service.tasks.ts",
   "scripts": {
-    "dev": "nodemon  src/server-task.ts  --exec ts-node-dev",
+    "start": "nodemon  src/server-task.ts  --exec ts-node-dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -23,7 +23,8 @@
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.1.6",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
