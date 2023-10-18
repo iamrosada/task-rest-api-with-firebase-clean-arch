@@ -84,6 +84,7 @@ export const TaskPanel: React.FC<TaskPanelProps> = (props) => {
             }
           />
         </Stack>
+        
         <Box textAlign='right' marginTop={2}>
           <Button startIcon={<AddIcon />} variant='outlined' type="submit">
             {isEdit ? 'EDIT' : 'ADD'}
