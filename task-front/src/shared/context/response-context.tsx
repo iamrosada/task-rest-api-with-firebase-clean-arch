@@ -1,10 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { client } from '../api';
-import { auth as firebase } from '../../components/config/firebase-config';
 
 export type Task = {
   [x: string]: any;
@@ -24,7 +22,6 @@ interface TaskContextType {
   listTasksFn: (page: number, itemsPerPage: number) => Promise<ApiResponse>;
   taskItems: Task[];
   realSizeArray: number;
-  loginWithGoogle: () => void;
 }
 
 const TaskContext = createContext<TaskContextType>({
@@ -34,7 +31,6 @@ const TaskContext = createContext<TaskContextType>({
   listTasksFn: () => Promise.resolve() as any,
   taskItems: [],
   realSizeArray: 0,
-  loginWithGoogle: () => {}
 });
 
 export const useTaskContext = () => useContext(TaskContext);
@@ -101,14 +97,7 @@ export const TaskProvider = ({ children }: any) => {
     [client, taskItems]
   );
 
-  const loginWithGoogle = () => {
-    signInWithPopup(firebase, new GoogleAuthProvider()).then((userCred) => {
-      if (userCred) {
-        setAuth(true);
-        window.localStorage.setItem('auth', 'true');
-      }
-    });
-  };
+
 
   const contextValue = useMemo(
     () => ({
@@ -118,23 +107,10 @@ export const TaskProvider = ({ children }: any) => {
       listTasksFn,
       taskItems,
       realSizeArray,
-      loginWithGoogle,
       error
     }),
     [taskItems, error]
   );
-
-  useEffect(() => {
-    firebase.onAuthStateChanged((userCred) => {
-      if (userCred) {
-        setAuth(true);
-        window.localStorage.setItem('auth', 'true');
-        userCred.getIdToken().then((token) => {
-          setToken(token);
-        });
-      }
-    });
-  }, []);
 
   return <TaskContext.Provider value={contextValue}>{children}</TaskContext.Provider>;
 };
