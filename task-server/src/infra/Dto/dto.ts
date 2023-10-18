@@ -18,3 +18,22 @@ export interface TaskCreateOutputDto{
 export interface TaskListInputDto{
   startAt:number; itemsPerPage:number
 }
+
+
+export interface UserInputDto{
+  email: string;
+  password: string;
+
+}
+
+export interface UserOutputDto{
+  uuid: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type OutPutUserAuth = {
+  accessToken?: string|null;
+}
