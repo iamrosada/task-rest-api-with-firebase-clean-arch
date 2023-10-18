@@ -1,5 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import {client} from '../api';
+import { auth as firebase } from "../../components/config/firebase-config";
 
 export type Task = {
   [x: string]: any;
@@ -21,7 +25,8 @@ interface TaskContextType {
   loginFn: (name: string, password: string) => Promise<string>;
   logoutFn: () => void;
   taskItems: Task[];
-  realSizeArray:number
+  realSizeArray:number,
+  loginWithGoogle:() => void
 }
 
 const TaskContext = createContext<TaskContextType>({
@@ -33,12 +38,17 @@ const TaskContext = createContext<TaskContextType>({
   loginFn: () => Promise.resolve() as any, 
   taskItems: [],
   realSizeArray:0,
+  loginWithGoogle:() => { },
 });
 
 export const useTaskContext = () => useContext(TaskContext);
 
 export const TaskProvider = ({ children }: any) => {
   const [error, setError] = useState<string | any>('');
+  const [auth, setAuth] = useState(
+		false || window.localStorage.getItem('auth') === 'true'
+	);
+	const [token, setToken] = useState('');
   const [taskItems, setTaskItems] = useState<Task[]>([]);
   const [realSizeArray, setRealSizeArray] = useState<number>(0)
 
@@ -78,33 +88,6 @@ export const TaskProvider = ({ children }: any) => {
     }
   }, []);
 
-  // const listTasksFn = useCallback(async (): Promise<Task[]> => {
-  //   try {
-  //     const response = await client.get<ApiResponse>('/tasks');
-  //     setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
-
-  //     return response.data?.tasks;
-  //   } catch (error: any) {
-  //     setError(`Error listing tasks: ${error.message}`);
-  //     throw error;
-  //   }
-  // }, []);
-  // const listTasksFn = useCallback(async (page: number, itemsPerPage: number): Promise<Task[]> => {
-  //   try {
-  //     const response = await client.get<ApiResponse>('/tasks', {
-  //       params: {
-  //         page,
-  //         itemsPerPage,
-  //       },
-  //     });
-  //     setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
-  
-  //     return response.data?.tasks;
-  //   } catch (error: any) {
-  //     setError(`Error listing tasks: ${error.message}`);
-  //     throw error;
-  //   }
-  // }, [client, taskItems]);
   const listTasksFn = useCallback(async (page: number, itemsPerPage: number): Promise<ApiResponse> => {
     try {
       const response = await client.get<ApiResponse>(`/tasks?page=${page}&itemsPerPage=${itemsPerPage}`);
@@ -124,6 +107,7 @@ export const TaskProvider = ({ children }: any) => {
     try {
       const response = await client.post<string>('/tasks/login', { name, password });
       const token = response.data;
+      setToken(token)
       localStorage.setItem('x-access-token', token);
       return token;
     } catch (error: any) {
@@ -135,6 +119,33 @@ export const TaskProvider = ({ children }: any) => {
     localStorage.removeItem('x-access-token');
   };
 
+ 
+	const loginWithGoogle = () => {
+		signInWithPopup(firebase, new GoogleAuthProvider())
+			.then((userCred) => {
+				if (userCred) {
+					setAuth(true);
+					window.localStorage.setItem('auth', 'true');
+				}
+			});
+	};
+
+ 
+
+	const fetchData = async () => {
+		const res = await client.get('/tasks', {
+			headers: {
+				Authorization: document.cookie.indexOf('access_token=')
+        
+			},
+		});
+		console.log(res.data);
+	};
+  useEffect(() => {
+		if (token) {
+			fetchData();
+		}
+	}, [token]);
   const contextValue = useMemo(() => ({
     createTaskFn,
     deleteTaskFn,
@@ -144,8 +155,21 @@ export const TaskProvider = ({ children }: any) => {
     logoutFn,
     taskItems,
     realSizeArray,
+    loginWithGoogle,
     error,
   }), [taskItems, error]);
+
+  useEffect(() => {
+		firebase.onAuthStateChanged((userCred) => {
+			if (userCred) {
+				setAuth(true);
+				window.localStorage.setItem('auth', 'true');
+				userCred.getIdToken().then((token) => {
+					setToken(token);
+				});
+			}
+		});
+	}, []);
 
   return (
     <TaskContext.Provider value={contextValue}>
