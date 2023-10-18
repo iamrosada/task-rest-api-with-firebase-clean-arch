@@ -3,6 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import runServer from './infra/http/routes';
 
+
+
+
 export const app = express();
 
 
@@ -12,11 +15,8 @@ app.use(cors({
   credentials: true, // Allow credentials (cookies, HTTP authentication)
 }));
 
-// {
-//   origin: 'http://localhost:3000', 
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', 
-//   allowedHeaders: 'Content-Type,Authorization', 
-// }
+
+
 app.use(express.json());
 
 // Routes
