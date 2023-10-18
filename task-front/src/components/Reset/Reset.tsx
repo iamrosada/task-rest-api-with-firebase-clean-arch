@@ -49,7 +49,6 @@ const Reset = () => {
         display='flex'
         flexDirection='column'
         textAlign='center'  
-        // backgroundColor='#dcdcdc'
         padding='30px'
         component='div'
       >
