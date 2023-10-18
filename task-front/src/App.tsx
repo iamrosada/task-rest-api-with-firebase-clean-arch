@@ -1,10 +1,14 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable import/no-cycle */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Pagination, Theme, createStyles } from '@mui/material';
 import { NavigateBefore, NavigateNext } from '@mui/icons-material';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 import { Header, TaskPanel, TaskList } from './components';
 import { useTaskContext } from './shared/context/response-context';
+import { auth as firebase } from './components/config/firebase-config';
 
 export type Task = {
   uuid: string;
@@ -33,16 +37,14 @@ export const App = () => {
 
       setTaskList(response.tasks);
       setSizeReal(response.size);
-      setIsLoading(false); 
+      setIsLoading(false);
     } catch (error) {
       console.error('Error loading tasks:', error);
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
-
   const handleNextPage = () => {
-   
     if (currentPage * itemsPerPage < sizeReal) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
@@ -108,6 +110,20 @@ export const App = () => {
     updateTaskList();
   }, [currentPage, itemsPerPage]);
 
+  const [auth, setAuth] = useState(false || window.localStorage.getItem('auth') === 'true');
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    firebase.onAuthStateChanged((userCred) => {
+      if (userCred) {
+        setAuth(true);
+        window.localStorage.setItem('auth', 'true');
+        userCred.getIdToken().then((token) => {
+          setToken(token);
+        });
+      }
+    });
+  }, []);
 
   const getCurrentTasks = (tasks: any) => {
     const indexOfLastTask = currentPage * itemsPerPage;
@@ -115,46 +131,55 @@ export const App = () => {
     return tasks.slice(indexOfFirstTask, indexOfLastTask);
   };
 
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const cookieValue = document?.cookie.split('access_token_ivipcoins=').join('');
+
+    if (!cookieValue) {
+      navigate('/login');
+    }
+  }, []);
   return (
     <Box marginTop={5} height='100%' display='flex' justifyContent='center' alignContent='center'>
-    <Box display='flex' flexDirection='column' width='500px'>
-      <Header taskCount={taskList.length} />
-      <TaskPanel mode='add' onAddTask={onAddTask} />
-      
-      {isLoading ? ( 
-      <Box display='flex' justifyContent='center' alignItems='center' marginTop={2}>
-        <CircularProgress/>
-        </Box>
-      ) : (
-        <TaskList
-          editTaskId={editTaskId}
-          taskList={getCurrentTasks(taskList)}
-          onDeleteTask={onDeleteTask}
-          onEdit={onEdit}
-          onChangeTask={onChangeTask}
-        />
-      )}
+      <Box display='flex' flexDirection='column' width='500px'>
+        <Header taskCount={taskList.length} />
+        <TaskPanel mode='add' onAddTask={onAddTask} />
 
-      <Box display='flex' justifyContent='center' alignItems='center' marginTop={2}>
-        <Button
-          variant='outlined'
-          disabled={currentPage === 1}
-          onClick={handlePreviousPage}
-          startIcon={<NavigateBefore />}
-        >
-          Previous
-        </Button>
-        <span>Page {currentPage}</span>
-        <Button
-          variant='outlined'
-          disabled={currentPage * itemsPerPage >= sizeReal}
-          onClick={handleNextPage}
-          endIcon={<NavigateNext />}
-        >
-          Next
-        </Button>
+        {isLoading ? (
+          <Box display='flex' justifyContent='center' alignItems='center' marginTop={2}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TaskList
+            editTaskId={editTaskId}
+            taskList={getCurrentTasks(taskList)}
+            onDeleteTask={onDeleteTask}
+            onEdit={onEdit}
+            onChangeTask={onChangeTask}
+          />
+        )}
+
+        <Box display='flex' justifyContent='center' alignItems='center' marginTop={2}>
+          <Button
+            variant='outlined'
+            disabled={currentPage === 1}
+            onClick={handlePreviousPage}
+            startIcon={<NavigateBefore />}
+          >
+            Previous
+          </Button>
+          <span>Page {currentPage}</span>
+          <Button
+            variant='outlined'
+            disabled={currentPage * itemsPerPage >= sizeReal}
+            onClick={handleNextPage}
+            endIcon={<NavigateNext />}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
     </Box>
-  </Box>
   );
 };
