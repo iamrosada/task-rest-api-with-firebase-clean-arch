@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 import {client} from '../api';
 import { auth as firebase } from "../../components/config/firebase-config";
 
@@ -22,20 +24,16 @@ interface TaskContextType {
   deleteTaskFn: (uuid: string) => Promise<void>; 
   updateTaskFn: (uuid: string, title: string, description: string) => Promise<Task>;
   listTasksFn: (page: number, itemsPerPage: number) => Promise<ApiResponse>;
-  loginFn: (name: string, password: string) => Promise<string>;
-  logoutFn: () => void;
   taskItems: Task[];
   realSizeArray:number,
   loginWithGoogle:() => void
 }
 
 const TaskContext = createContext<TaskContextType>({
-  logoutFn: () => { },
   createTaskFn: () => Promise.resolve() ,
   deleteTaskFn: () => Promise.resolve(),
   updateTaskFn: () => Promise.resolve() as any,
   listTasksFn: () => Promise.resolve() as any,
-  loginFn: () => Promise.resolve() as any, 
   taskItems: [],
   realSizeArray:0,
   loginWithGoogle:() => { },
@@ -89,13 +87,15 @@ export const TaskProvider = ({ children }: any) => {
   }, []);
 
   const listTasksFn = useCallback(async (page: number, itemsPerPage: number): Promise<ApiResponse> => {
+   
     try {
-      const response = await client.get<ApiResponse>(`/tasks?page=${page}&itemsPerPage=${itemsPerPage}`);
-      setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
-      console.log("response.data?.tasks;",response.data?.size, realSizeArray)
-      setRealSizeArray(response.data?.size)
-      console.log("response.data?.tasks;",response.data?.size, realSizeArray)
 
+      const response = await client.get<ApiResponse>(`/tasks?page=${page}&itemsPerPage=${itemsPerPage}`)
+       
+      setTaskItems([...taskItems, ...(response.data?.tasks || [])]);
+      setRealSizeArray(response.data?.size)
+       const cookieValue = document?.cookie.split("access_token_ivipcoins=").join("")
+        console.log("cookieValue--->",cookieValue,Cookies.get('access_token_ivipcoins'))
       return {tasks:response.data?.tasks, size: response.data?.size}
     } catch (error: any) {
       setError(`Error listing tasks: ${error.message}`);
@@ -103,23 +103,8 @@ export const TaskProvider = ({ children }: any) => {
     }
   }, [client, taskItems]);
 
-  const loginFn = useCallback(async (name: string, password: string): Promise<string> => {
-    try {
-      const response = await client.post<string>('/tasks/login', { name, password });
-      const token = response.data;
-      setToken(token)
-      localStorage.setItem('x-access-token', token);
-      return token;
-    } catch (error: any) {
-      setError(`Login error: ${error.message}`);
-      throw error;
-    }
-  }, []);
-  const logoutFn = () => {
-    localStorage.removeItem('x-access-token');
-  };
 
- 
+
 	const loginWithGoogle = () => {
 		signInWithPopup(firebase, new GoogleAuthProvider())
 			.then((userCred) => {
@@ -131,28 +116,11 @@ export const TaskProvider = ({ children }: any) => {
 	};
 
  
-
-	const fetchData = async () => {
-		const res = await client.get('/tasks', {
-			headers: {
-				Authorization: document.cookie.indexOf('access_token=')
-        
-			},
-		});
-		console.log(res.data);
-	};
-  useEffect(() => {
-		if (token) {
-			fetchData();
-		}
-	}, [token]);
   const contextValue = useMemo(() => ({
     createTaskFn,
     deleteTaskFn,
     updateTaskFn,
     listTasksFn,
-    loginFn,
-    logoutFn,
     taskItems,
     realSizeArray,
     loginWithGoogle,

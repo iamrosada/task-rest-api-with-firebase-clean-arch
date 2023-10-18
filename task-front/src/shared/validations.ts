@@ -7,6 +7,12 @@ export const validationSchema = yup.object().shape({
 });
 
 
+export const searchSchema = yup.object().shape({
+  search: yup.string()
+    .min(3, 'Search query must be at least 3 characters long')
+    .required('Search query is required'),
+});
+
 export const initialValues = {
   tittle: "",
   description: "",

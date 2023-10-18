@@ -8,42 +8,68 @@ const handleSuccessResponse = (res: Response, message: string, data?: any) => {
   });
 };
 
+function writeCustomError(message) {
+  var errorObject:any = {};
+  errorObject.message = message;
+  errorObject.code = 10001; // as you want
+  errorObject.status = "failed";
+  return errorObject;
+  }
 const handleErrorResponse = (res: Response, error: any) => {
   console.error("Error:", error);
-  res.status(500).json({ error: "Internal Server Error" });
+
+  let statusCode = 500;
+  let errorMessage = "Internal Server Error";
+
+  if (error.code === "auth/user-not-found") {
+    statusCode = 404;
+    errorMessage = "User not found";
+  } else if (error.code === "auth/wrong-password") {
+    statusCode = 401;
+    errorMessage = "Incorrect password";
+  } else if (error.code === "auth/weak-password") {
+    statusCode = 400;
+    errorMessage = "Weak password: The password must be at least 6 characters.";
+  } else if (error.code === "auth/email-already-in-use") {
+    statusCode = 409;
+    errorMessage = "Email already in use: The provided email is already registered.";
+  } else if (error.code === "auth/invalid-email") {
+    statusCode = 400;
+    errorMessage = "Invalid email: The provided email is not valid.";
+  }
+  res.status(statusCode).json({ error: errorMessage });
 };
 
 export const handlerLogInWithEmailAndPassword = async (req: Request, res: Response) => {
   try {
     const response = await signInWithGoogleAuthCtrl.logInWithEmailAndPassword(req.body.email, req.body.password);
 
-    // Set the Authorization header in the response
     res.setHeader("Authorization", response?.accessToken as any);
-    res.writeHead(200,{'Form':'test@test.com'})
-    // Set an HTTP-only cookie named "access_token"
+    
     res.cookie("access_token", response?.accessToken, { httpOnly: true });
 
     handleSuccessResponse(res, "Login successful", response.accessToken);
   } catch (error) {
-    handleErrorResponse(res, error);
+    var err = writeCustomError(error.message || error.errmsg || error.stack);
+    console.info(err?.message,"vvvvv")
+    res.status(417).json(err).end();
   }
 };
 
-
-
 export const handlerRegisterWithEmailAndPassword = async (req: Request, res: Response) => {
-  console.info(req.body.email, req.body.password)
-  try {
-   const response = await signInWithGoogleAuthCtrl.registerWithEmailAndPassword(req.body.email, req.body.password);
-    res.writeHead(200,{'Form':'test@test.com'})
-  //  res.setHeader("Authorization", response?.accessToken as any);
-   res.cookie("access_token", response?.accessToken, { httpOnly: true }); // Replace "access_token" with your desired cookie name
+  console.info(req.body.email, req.body.password);
 
-   handleSuccessResponse(res, "Registration successful", response.accessToken);
+  try {
+    const response = await signInWithGoogleAuthCtrl.registerWithEmailAndPassword(req.body.email, req.body.password);
+     res.setHeader("Authorization", response?.accessToken as any);
+    res.cookie("access_token", response?.accessToken, { httpOnly: true }); // Replace "access_token" with your desired cookie name
+
+    handleSuccessResponse(res, "Registration successful", response.accessToken);
   } catch (error) {
     handleErrorResponse(res, error);
   }
 };
+
 
 export const handlerSignInWithGoogle = async (req: Request, res: Response) => {
   try {

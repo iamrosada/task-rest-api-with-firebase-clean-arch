@@ -6,7 +6,6 @@ import {
   where,
 } from "firebase/firestore";
 import { AuthRepository } from "../../application/repository/auth-repository";
-import { AuthEntity } from "../../domain/authentication";
 import {
   app,
   createUserWithEmailAndPassword,
@@ -18,8 +17,8 @@ import {
   signInWithPopup,
 } from "../database/firebase/firebase";
 import { Auth, signOut } from "firebase/auth";
-import admin from "../database/config/firebase-config";
 import { OutPutUserAuth, UserOutputDto } from "../dto/dto";
+import { authSchema } from "../validation/schema";
 
 class FirebaseAuthGoogleRepository implements AuthRepository {
   public authByGoogle:Auth;
@@ -30,58 +29,69 @@ class FirebaseAuthGoogleRepository implements AuthRepository {
 
 
   async logInWithEmailAndPassword(auth: UserOutputDto): Promise<OutPutUserAuth> {
-    const emailExistsQuery = query(collection(db, "users"), where("email", "==", auth.email));
-    const emailExistsSnapshot = await getDocs(emailExistsQuery);
+    try {
+      const validatedData = authSchema.parse(auth);
+      if(!validatedData){
+        throw Error("The data is incorrect, please verify email and password")
+      }
+      const emailExistsQuery = query(collection(db, "users"), where("email", "==", validatedData.email));
+      const emailExistsSnapshot = await getDocs(emailExistsQuery);
   
-    // console.log(auth,"funcionada")
-    if (emailExistsSnapshot.empty) {
-      throw new Error("Email not found. Please check your email address or register a new account.");
-    }
-      try {
-      const response = await signInWithEmailAndPassword(this.authByGoogle, auth.email, auth.password);
-      // console.log(auth,"response", response)
-
-        return {
+      if (emailExistsSnapshot.empty) {
+        throw new Error("Email not found. Please check your email address or register a new account.");
+      }
+  
+      const response = await signInWithEmailAndPassword(this.authByGoogle, validatedData.email, validatedData.password);
+      return {
         accessToken: response.user?.refreshToken
       };
-
     } catch (err) {
       console.error(err);
       console.log(err.message);
-      throw err; // Re-throw the error
-
+      throw err;
     }
   }
+
   async registerWithEmailAndPassword(auth: UserOutputDto): Promise<OutPutUserAuth> {
-    const emailExistsQuery = query(collection(db, "users"), where("email", "==", auth.email));
-    const emailExistsSnapshot = await getDocs(emailExistsQuery);
-  
-    if (emailExistsSnapshot.docs.length > 0) {
-      throw new Error("Email already in use. Please choose a different email address.");
-    }
-  
     try {
-      const res = await createUserWithEmailAndPassword(this.authByGoogle, auth.email, auth.password);
+      const validatedData = authSchema.parse(auth);
+      if (!validatedData) {
+        throw new Error("The data is incorrect, please verify email and password");
+      }
+  
+      const emailExistsQuery = query(collection(db, "users"), where("email", "==", validatedData.email));
+      const emailExistsSnapshot = await getDocs(emailExistsQuery);
+  
+      if (emailExistsSnapshot.docs.length > 0) {
+        throw new Error("Email already in use. Please choose a different email address.");
+      }
+  
+      const res = await createUserWithEmailAndPassword(this.authByGoogle, validatedData.email, validatedData.password);
       const user = res.user;
       await addDoc(collection(db, "users"), {
         uid: user.uid,
-        email: auth.email,
-        password: auth.password,
+        email: validatedData.email,
+        password: validatedData.password,
         uuid: auth.uuid,
         authProvider: "local",
       });
+  
       return {
         accessToken: user?.refreshToken
       };
-    } catch (err) {
-      console.error(err);
-      console.log(err.message);
-      throw err; // Re-throw the error
-
+    } catch (error) {
+      console.error("Error during registration:", error);
+  
+      if (error.code === "auth/weak-password") {
+        throw new Error("Weak password: The password must be at least 6 characters.");
+      } else if (error.code === "auth/invalid-email") {
+        throw new Error("Invalid email: The provided email is not valid.");
+      } else {
+        throw error;
+      }
     }
   }
   
-
  
   async signInWithGoogle(): Promise<void> {
     try {

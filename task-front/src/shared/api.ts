@@ -3,12 +3,13 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8080';
 
 
+
 export const client = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, 
 });
 
 client.interceptors.request.use(
@@ -25,4 +26,3 @@ client.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
