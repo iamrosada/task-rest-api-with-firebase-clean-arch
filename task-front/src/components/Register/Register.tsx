@@ -4,40 +4,13 @@ import React from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Box, Container, TextField, Button, Typography, Link } from '@mui/material';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { useAuthContext } from '../../shared/context/auth-context';
+import { validationRegisterSchema } from '../../shared/validations';
+import { containerStyle, textBoxStyle, registerBtnStyle } from '../../styles';
 
 const Register = () => {
   const { registerFn } = useAuthContext();
   const navigate = useNavigate();
-
-  const containerStyle = {
-    height: '100vh',
-    width: '100vw',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
-  const textBoxStyle = {
-    padding: '10px',
-    fontSize: '18px',
-    marginBottom: '10px',
-  };
-
-  const registerBtnStyle = {
-    padding: '10px',
-    fontSize: '18px',
-    marginBottom: '10px',
-    border: 'none',
-    color: 'white',
-    backgroundColor: 'black',
-  };
-
-  const validationSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Invalid email address'),
-    password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
-  });
 
   const handleSubmit = async (values:any) => {
     try {
@@ -53,7 +26,7 @@ const Register = () => {
       email: '',
       password: '',
     },
-   validationSchema,
+   validationSchema:validationRegisterSchema,
     onSubmit: handleSubmit,
   });
 

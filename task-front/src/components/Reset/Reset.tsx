@@ -6,13 +6,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Container, TextField, Button, Typography, Box, Link as MuiLink } from '@mui/material';
 
 import { useFormik } from 'formik';
-import * as yup from 'yup';
 import { useAuthContext } from '../../shared/context/auth-context';
+import { validationResetSchema } from '../../shared/validations';
+import { containerStyle, textBoxStyle, resetBtnStyle } from '../../styles';
 
 
-const validationSchema = yup.object({
-  email: yup.string().email('Invalid email').required('Email is required'),
-});
 
 const Reset = () => {
   const { sendPasswordResetFn } = useAuthContext();
@@ -32,33 +30,10 @@ const Reset = () => {
     initialValues: {
       email: '',
     },
-    validationSchema,
+    validationSchema:validationResetSchema,
     onSubmit,
   });
-
-  const containerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    width: '100vw',
-  };
-
-  const textBoxStyle = {
-    padding: '10px',
-    fontSize: '18px',
-    marginBottom: '10px',
-  };
-
-  const resetBtnStyle = {
-    padding: '10px',
-    fontSize: '18px',
-    marginBottom: '10px',
-    border: 'none',
-    color: 'white',
-    backgroundColor: 'black',
-  };
-
+  
   return (
     <Container style={containerStyle}>
       <Box display='flex' flexDirection='column' textAlign='center' padding='30px' component='div'>

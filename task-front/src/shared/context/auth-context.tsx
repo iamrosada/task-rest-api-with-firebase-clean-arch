@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 interface AuthProviderProps {
-  children: React.ReactNode; 
+  children: React.ReactNode;
 }
 const AuthContext = createContext<AuthContextType>({
   logoutFn: async () => {},
@@ -31,15 +31,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loginFn = useCallback(async (email: string, password: string): Promise<void> => {
     try {
-     const response =  await client.post('/auth/login', {
+      const response = await client.post('/auth/login', {
         email,
         password
       });
       if (response.headers) {
         response.headers.Authorization = response.data.data;
       }
-      localStorage.setItem('x-access-token',response.data.data)
-      Cookies.set('access_token_ivipcoins',response.data.data)
+      localStorage.setItem('x-access-token', response.data.data);
+      Cookies.set('access_token_ivipcoins', response.data.data);
 
       setIsAuthenticated(true);
     } catch (error) {
@@ -50,12 +50,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const registerFn = useCallback(async (email: string, password: string): Promise<void> => {
     try {
-     const response =  await client.post('/auth/register', {
+      const response = await client.post('/auth/register', {
         email,
         password
-      })
+      });
       client.defaults.headers.authorization = `${response.data}`;
-      localStorage.setItem('x-access-token',response.data)
+      localStorage.setItem('x-access-token', response.data);
       setIsAuthenticated(true);
     } catch (error) {
       setIsAuthenticated(false);
@@ -82,21 +82,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await client.get('/auth/logout');
       deleteCookie('access_token_ivipcoins');
-      localStorage.removeItem('x-access-token')
+      localStorage.removeItem('x-access-token');
       setIsAuthenticated(false);
     } catch (error) {
       throw error;
     }
   }, []);
 
-  const authContextValue = useMemo(() => ({
-    loginFn,
-    registerFn,
-    signInWithGoogleFn,
-    sendPasswordResetFn,
-    logoutFn,
-    isAuthenticated
-  }), [isAuthenticated]);
+  const authContextValue = useMemo(
+    () => ({
+      loginFn,
+      registerFn,
+      signInWithGoogleFn,
+      sendPasswordResetFn,
+      logoutFn,
+      isAuthenticated
+    }),
+    [isAuthenticated]
+  );
 
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };

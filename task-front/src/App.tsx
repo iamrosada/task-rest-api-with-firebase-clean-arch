@@ -16,11 +16,10 @@ export type Task = {
   description: string;
 };
 
-
 export const App = () => {
   const [editTaskId, setEditTaskId] = React.useState<string | null>(null);
   const { createTaskFn, deleteTaskFn, updateTaskFn, listTasksFn, taskItems } = useTaskContext();
-  const { logoutFn } = useAuthContext(); 
+  const { logoutFn } = useAuthContext();
 
   const [taskList, setTaskList] = React.useState<Task[]>(taskItems);
 
@@ -124,11 +123,10 @@ export const App = () => {
       )
     );
   }, [search, taskList]);
-  
+
   const handleLogout = async () => {
     try {
       await logoutFn();
-      // Redirect to the login page or wherever you want
       navigate('/login');
     } catch (error) {
       console.error('Error logging out:', error);
@@ -148,58 +146,55 @@ export const App = () => {
   }, []);
 
   return (
-    <Box marginTop={5} height="100%" display="flex" justifyContent="center" alignContent="center">
-    <Box display="flex" flexDirection="column" width="500px">
-      <Search search={search} setSearch={setSearch} />
-      <Header taskCount={taskList.length} />
-      <TaskPanel mode="add" onAddTask={onAddTask} />
+    <Box marginTop={5} height='100%' display='flex' justifyContent='center' alignContent='center'>
+      <Box display='flex' flexDirection='column' width='500px'>
+        <Search search={search} setSearch={setSearch} />
+        <Header taskCount={taskList.length} />
+        <TaskPanel mode='add' onAddTask={onAddTask} />
 
-      {isLoading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" marginTop={2}>
-          <CircularProgress />
+        {isLoading ? (
+          <Box display='flex' justifyContent='center' alignItems='center' marginTop={2}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TaskList
+            editTaskId={editTaskId}
+            taskList={getCurrentTasks(filteredTask)}
+            onDeleteTask={onDeleteTask}
+            onEdit={onEdit}
+            onChangeTask={onChangeTask}
+          />
+        )}
+
+        <Box display='flex' justifyContent='center' alignItems='center' marginTop={2}>
+          <Button
+            variant='outlined'
+            disabled={currentPage === 1}
+            onClick={handlePreviousPage}
+            startIcon={<NavigateBefore />}
+          >
+            Previous
+          </Button>
+          <span>Page {currentPage}</span>
+          <Button
+            variant='outlined'
+            disabled={currentPage * itemsPerPage >= sizeReal}
+            onClick={handleNextPage}
+            endIcon={<NavigateNext />}
+          >
+            Next
+          </Button>
         </Box>
-      ) : (
-        <TaskList
-          editTaskId={editTaskId}
-          taskList={getCurrentTasks(filteredTask)}
-          onDeleteTask={onDeleteTask}
-          onEdit={onEdit}
-          onChangeTask={onChangeTask}
-        />
-      )}
 
-      <Box display="flex" justifyContent="center" alignItems="center" marginTop={2}>
         <Button
-          variant="outlined"
-          disabled={currentPage === 1}
-          onClick={handlePreviousPage}
-          startIcon={<NavigateBefore />}
+          variant='contained'
+          color='secondary'
+          onClick={handleLogout}
+          style={{ marginTop: '1rem' }}
         >
-          Previous
-        </Button>
-        <span>Page {currentPage}</span>
-        <Button
-          variant="outlined"
-          disabled={currentPage * itemsPerPage >= sizeReal}
-          onClick={handleNextPage}
-          endIcon={<NavigateNext />}
-        >
-          Next
+          Logout
         </Button>
       </Box>
-
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={handleLogout}
-        style={{ marginTop: '1rem' }}
-      >
-        Logout
-      </Button>
     </Box>
-  </Box>
   );
 };
-
-
-

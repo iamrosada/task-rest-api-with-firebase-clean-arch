@@ -3,37 +3,13 @@ import React from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { TextField, Button, Box, Container, Paper, Typography, Link } from '@mui/material';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { useAuthContext } from '../../shared/context/auth-context';
+import { validationLoginSchema } from '../../shared/validations';
+import { containerStyle, loginButtonStyle, textBoxStyle } from '../../styles';
 
 const Login = () => {
   const { loginFn } = useAuthContext();
   const navigate = useNavigate();
-
-  const loginButtonStyle = {
-    width: '100%',
-    marginTop: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-  const containerStyle = {
-    height: '100vh',
-    width: '100vw',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
-  const textBoxStyle = {
-    padding: '10px',
-    fontSize: '18px',
-    marginBottom: '10px'
-  };
-  const validationSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Invalid email address'),
-    password: Yup.string().required('Password is required'),
-  });
 
   const handleSubmit = async (values: { email: string; password: string; }) => {
     try {
@@ -49,7 +25,7 @@ const Login = () => {
       email: '',
       password: '',
     },
-    validationSchema,
+    validationSchema: validationLoginSchema,
     onSubmit: handleSubmit,
   });
 
